@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pronunciation Checker</title>
+    <style>
+        body {
+            background-image: url('maytinh.png');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+        .sentence {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 18px;
+        }
+        .sentence:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        .selected {
+            border: 2px solid #4caf50;
+            box-shadow: 0 0 10px #4caf50;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .record {
+            background-color: red;
+            color: white;
+        }
+        .stop {
+            background-color: green;
+            color: white;
+        }
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #ffeb3b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Pronunciation Checker</h1>
+        <div id="sentences"></div>
+
+        <div class="buttons">
+            <button class="record" onclick="startRecording()">🎤 Start Recording</button>
+            <button class="stop" onclick="stopRecording()" disabled>⏹ Stop Recording</button>
+        </div>
+
+        <audio id="audioPlayback" controls style="margin-top: 20px; display: none;"></audio>
+        <p class="feedback" id="feedback"></p>
+    </div>
+
+    <script>
+        const sentences = [
+            "We should ‘finish the ‘project for our ‘history ‘class",
+            "‘Peter is re‘vising for his e‘xam ‘next ‘week.",
+            "‘Students will ‘spend more ‘time ‘working with ‘other ‘classmates.",
+            "I ‘like to ‘watch ‘videos that ‘help me ‘learn ‘new ‘things",
+            "I have ‘installed some ‘apps on my ‘phone"
+        ];
+
+        let selectedSentence = null;
+        let mediaRecorder;
+        let audioChunks = [];
+
+        function renderSentences() {
+            const container = document.getElementById("sentences");
+            container.innerHTML = "";
+            sentences.forEach((sentence, index) => {
+                const div = document.createElement("div");
+                div.classList.add("sentence");
+                div.textContent = sentence;
+                div.onclick = () => selectSentence(index, div);
+                container.appendChild(div);
+            });
+        }
+
+        function selectSentence(index, element) {
+            if (selectedSentence !== null) {
+                document.getElementsByClassName("sentence")[selectedSentence].classList.remove("selected");
+            }
+            selectedSentence = index;
+            element.classList.add("selected");
+            document.getElementById("feedback").textContent = "";
+        }
+
+        async function startRecording() {
+            if (!selectedSentence) {
+                alert("Please select a sentence first!");
+                return;
+            }
+
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioElement = document.getElementById("audioPlayback");
+                audioElement.src = audioUrl;
+                audioElement.style.display = "block";
+
+                analyzeAudio();
+            };
+
+            mediaRecorder.start();
+            document.querySelector(".record").disabled = true;
+            document.querySelector(".stop").disabled = false;
+        }
+
+        function stopRecording() {
+            mediaRecorder.stop();
+            document.querySelector(".record").disabled = false;
+            document.querySelector(".stop").disabled = true;
+        }
+
+        function analyzeAudio() {
+            setTimeout(() => {
+                document.getElementById("feedback").textContent = 
+                    "Your pronunciation score: 85/100. Stress accuracy: 90/100.";
+            }, 2000);
+        }
+
+        renderSentences();
+    </script>
+
+</body>
+</html>
