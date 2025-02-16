@@ -66,6 +66,7 @@
 
     <div class="container">
         <h1>Pronunciation Checker</h1>
+        <p>Select a sentence, record your voice, and get feedback.</p>
         <div id="sentences"></div>
 
         <div class="buttons">
@@ -112,7 +113,7 @@
         }
 
         async function startRecording() {
-            if (!selectedSentence) {
+            if (selectedSentence === null) {
                 alert("Please select a sentence first!");
                 return;
             }
